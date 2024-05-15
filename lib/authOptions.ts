@@ -58,8 +58,8 @@ export const authOptions: NextAuthOptions = {
 
               if (response.status === "success") {
                 const user = await loggedInUser(response.token);
-                console.log("userAuth:", user);
-                return { ...user, ...response.token };
+                // console.log("userAuth:", user);
+                return { ...user, ...response };
               }
             } catch (error) {
               console.log("error2", error);
@@ -80,11 +80,12 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    jwt: async ({ user, token, trigger, session }) => {
-      if (trigger === "update") {
-        return { ...token, ...session.user };
-      }
+    async jwt({ user, token }) {
       return { ...token, ...user };
+    },
+    async session({ session, token, user }) {
+      session.user = token;
+      return session;
     },
   },
 };

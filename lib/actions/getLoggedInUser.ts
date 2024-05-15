@@ -2,7 +2,7 @@
 /**PATH */
 const sanctum_path =
   process.env.NEXT_PUBLIC_APP_URL_SANCTUM + "/sanctum/csrf-cookie";
-const path = process.env.NEXT_PUBLIC_APP_URL_API + "/user";
+const path = process.env.NEXT_PUBLIC_APP_URL_API + "auth/user";
 /**PATH */
 
 export const loggedInUser = async (token: string) => {
