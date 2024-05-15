@@ -1,0 +1,80 @@
+"use server";
+
+import { RegisterSchema } from "@/schemas";
+import * as z from "zod";
+
+/**PATH */
+const sanctum_path =
+  process.env.NEXT_PUBLIC_APP_URL_SANCTUM + "/sanctum/csrf-cookie";
+const register_path = process.env.NEXT_PUBLIC_APP_URL_API + "/auth/register";
+/**PATH */
+
+/**register user */
+export const register: (values: z.infer<typeof RegisterSchema>) => Promise<{
+  error: string | false;
+  success: string | false;
+}> = async (values: z.infer<typeof RegisterSchema>) => {
+  ///data validation
+  const validatedFields = RegisterSchema.safeParse(values);
+  if (!validatedFields.success) {
+    return { error: "Invalid Credentials!", success: false };
+  }
+
+  //destructuring data
+  const { name, password, confirmPassword, email } = validatedFields.data;
+
+  /** returning error */
+  if (password !== confirmPassword) {
+    return {
+      error: "Password and ConfirmPassword do not match!",
+      success: false,
+    };
+  }
+
+  try {
+    //CSRF Token
+    const csrf_response = await fetch(sanctum_path, {
+      method: "GET",
+      credentials: "include", //Include credentials for cross-origin requests
+    });
+
+    if (csrf_response.ok) {
+      try {
+        /**register user */
+        const res = await fetch(register_path, {
+          method: "POST",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+            name: name,
+          }),
+        });
+        const response = await res.json();
+        console.log('resss',response);
+        
+        // session.isLoggedIn = true;
+        // todo: when user register an email sent. question:user can not login? yes? if not this is not true:
+        //session.isLoggedIn = true; Email sent but not redirect to any where? yes?
+        return {
+          success: "Activation E-mail sent, check your E-mail!",
+          error: false,
+        };
+      } catch (error) {
+        console.log("error2", error);
+        return {
+          error: "Something Wrong, try again!",
+          success: false,
+        };
+      }
+    }
+  } catch (error) {
+    console.log("error", error);
+    return {
+      error: "Something Wrong, try again!",
+      success: false,
+    };
+  }
+};
