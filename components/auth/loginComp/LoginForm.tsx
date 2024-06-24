@@ -37,7 +37,8 @@ const LoginForm = ({ locale }: { locale: string }) => {
         password: values.password,
         redirect: false,
       });
-      if (!response?.error) {
+      console.log('res',response);
+      if (response?.status === 'error') {
         router.push('/settings')
       }
       // login(values).then((data) => {
